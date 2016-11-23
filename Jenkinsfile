@@ -6,18 +6,35 @@ node {
         environment.inside {
 
             stage "Build"
-                sh "go build"
+                sh "go build -o build/wiki wiki.go"
 
             stage "Test"
-                sh "2>&1 go test -v | go2xunit -output tests.xml"
+                sh "mkdir -p reports/"
+                sh "2>&1 go test -v | go2xunit -output reports/tests.xml"
                 step([$class: 'XUnitBuilder',
                       thresholds: [[$class: 'FailedThreshold', unstableThreshold: '1']],
-                      tools: [[$class: 'JUnitType', pattern: '*.xml']]])
-                step([$class: 'ArtifactArchiver', artifacts: 'gowiki', fingerprint: true])
+                      tools: [[$class: 'JUnitType', pattern: 'reports/*.xml']]])
+                zip dir: 'build/', archive: true, glob: '', zipFile: "gowiki-${env.BUILD_ID}.zip"
+                //step([$class: 'ArtifactArchiver', artifacts: 'build/wiki', fingerprint: true])
 
+            stage 'Deployment'
+                def server = Artifactory.server("artifactory-test")
+                def uploadSpec = """{
+                  "files": [
+                  {
+                    "pattern": "gowiki-${env.BUILD_ID}.zip",
+                    "target": "golang/"
+                  }
+                  ]
+                  }"""
+
+                def buildInfo = Artifactory.newBuildInfo()
+                buildInfo.env.capture = true
+                buildInfo = server.upload(uploadSpec)
+                server.publishBuildInfo(buildInfo)
 
         }
-        
+
      stage "Workspace cleanup"
         def workspace = pwd()
         deleteDir()
