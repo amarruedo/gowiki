@@ -23,7 +23,7 @@ node {
                   "files": [
                   {
                     "pattern": "gowiki-${env.BUILD_ID}.zip",
-                    "target": "golang/"
+                    "target": "golang/gowiki/gowiki-${env.BUILD_ID}.zip"
                   }
                   ]
                   }"""
