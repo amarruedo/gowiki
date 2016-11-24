@@ -17,10 +17,9 @@ node {
                 zip dir: 'build/', archive: true, glob: '', zipFile: "gowiki-${env.BUILD_ID}.zip"
                 //step([$class: 'ArtifactArchiver', artifacts: 'build/wiki', fingerprint: true])
 
+                /*
             stage 'Deployment'
-                sh "curl -ujenkins:jenkins -T gowiki-${env.BUILD_ID}.zip \"http://artifactory-test.saltosystems.com/artifactory/golang/gowiki/gowiki-${env.BUILD_ID}.zip\""
-
-                /*def server = Artifactory.server("artifactory-test")
+                def server = Artifactory.server("artifactory-test")
                 def uploadSpec = """{
                   "files": [
                     {
@@ -36,7 +35,11 @@ node {
                 server.publishBuildInfo(buildInfo)
                 */
         }
-        
+
+     stage 'Deployment'
+        sh "curl -ujenkins:jenkins -T gowiki-${env.BUILD_ID}.zip \"http://artifactory-test.saltosystems.com/artifactory/golang/gowiki/gowiki-${env.BUILD_ID}.zip\""
+
+
      stage "Workspace cleanup"
         def workspace = pwd()
         deleteDir()
